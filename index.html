@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>天文社招新 · 知识问答</title>
+<style>
+:root {
+  --primary: #4f7cff;
+  --primary2: #8b5cf6;
+  --bg1: #0a0e2a;
+  --bg2: #1a0b2e;
+  --card-bg: rgba(255,255,255,0.06);
+  --text: #eef0ff;
+  --text-dim: #9aa3c7;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(160deg, var(--bg1) 0%, #141a45 45%, var(--bg2) 100%);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-x: hidden;
+}
+/* 星空背景 */
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+/* 页面容器 */
+.page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+.hidden { display: none !important; }
+/* 标题 */
+h1 { font-size: 2rem; letter-spacing: 1px; margin-bottom: 8px; }
+.subtitle { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 32px; }
+.logo { font-size: 3rem; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+/* 卡片 */
+.card {
+  background: var(--card-bg);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 20px;
+  padding: 28px 22px;
+  box-shadow: 0 0 24px rgba(79, 124, 255, 0.15), inset 0 0 30px rgba(255,255,255,0.02);
+  backdrop-filter: blur(6px);
+  margin-bottom: 24px;
+}
+/* 进度 */
+.progress { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 10px; }
+.dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+.dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.3s;
+}
+.dot.active { background: var(--primary2); box-shadow: 0 0 8px var(--primary2); transform: scale(1.3); }
+.dot.done { background: var(--primary); }
+/* 题目 */
+.question { font-size: 1.25rem; line-height: 1.6; margin-bottom: 24px; text-align: left; }
+/* 选项 */
+.option {
+  display: block;
+  width: 100%;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 1.05rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.option:hover { border-color: var(--primary); background: rgba(79,124,255,0.12); }
+.option.selected {
+  border-color: var(--primary2);
+  background: linear-gradient(135deg, rgba(79,124,255,0.25), rgba(139,92,246,0.25));
+  box-shadow: 0 0 12px rgba(139,92,246,0.4);
+}
+.option .tag {
+  display: inline-block;
+  width: 26px; height: 26px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  margin-right: 10px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.option.selected .tag { background: var(--primary2); color: #fff; }
+/* 按钮 */
+.btn {
+  width: 100%;
+  padding: 18px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: 1px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,124,255,0.4); }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+/* 结果页 */
+.result-score { font-size: 1.2rem; margin-bottom: 6px; }
+.result-score strong { font-size: 2.8rem; color: #ffd76a; }
+.result-msg { font-size: 1.02rem; color: var(--text-dim); margin-bottom: 6px; }
+.result-stars { font-size: 2rem; margin-bottom: 16px; min-height: 2.5rem; }
+.result-stars span { display: inline-block; animation: pop 0.5s ease both; }
+@keyframes pop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.4); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@media (max-width: 420px) {
+  h1 { font-size: 1.6rem; }
+  .question { font-size: 1.1rem; }
+  .option { padding: 14px 16px; font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<!-- 开始页 -->
+<div id="startPage" class="page">
+  <div class="logo">🔭</div>
+  <h1>天文社招新</h1>
+  <p class="subtitle">知识问答挑战</p>
+  <button class="btn" id="startBtn">开始答题</button>
+</div>
+
+<!-- 答题页 -->
+<div id="quizPage" class="page hidden">
+  <div class="progress" id="progressText">第 1/5 题</div>
+  <div class="dots" id="dots"></div>
+  <div class="card">
+    <div class="question" id="questionText"></div>
+    <div id="optionsBox"></div>
+  </div>
+  <button class="btn" id="nextBtn" disabled>下一题</button>
+</div>
+
+<!-- 结果页 -->
+<div id="resultPage" class="page hidden">
+  <div class="card">
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-score">你答对了 <strong id="scoreNum">0</strong>/<span id="scoreTotal">5</span> 道题</div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <button class="btn" id="restartBtn">再来一次</button>
+</div>
+
+<script>
+/* ============================================================
+   题库（在此修改 / 替换）
+   结构：{ question, options, answer }
+   answer 支持：选项文本 / 选项索引 / 字母 A-D / 数组（多选）
+   ============================================================ */
+const QUESTIONS = [
+  { "question": "中国第一颗月球探测器是？", "options": ["天问一号", "嫦娥一号", "神舟一号", "长征一号"], "answer": "嫦娥一号" },
+  { "question": "中国第一颗火星探测器是？", "options": ["嫦娥一号", "天问一号", "玉兔号", "神舟五号"], "answer": "天问一号" },
+  { "question": "中国空间站的名称是？", "options": ["天问", "嫦娥", "天宫", "玉兔"], "answer": "天宫" },
+  { "question": "中国第一位进入太空的航天员是？", "options": ["杨利伟", "聂海胜", "翟志刚", "刘洋"], "answer": "杨利伟" },
+  { "question": "中国探月工程的探测器系列统称？", "options": ["嫦娥", "天问", "神舟", "长征"], "answer": "嫦娥" },
+  { "question": "离地球最近的自然天体是？", "options": ["太阳", "月球", "火星", "金星"], "answer": "月球" },
+  { "question": "月亮本身会发光吗？", "options": ["会", "不会，反射太阳光"], "answer": "不会，反射太阳光" },
+  { "question": "太阳是一颗？", "options": ["行星", "恒星", "卫星", "彗星"], "answer": "恒星" },
+  { "question": "太阳系中最大的行星是？", "options": ["地球", "土星", "木星", "海王星"], "answer": "木星" },
+  { "question": "我们生活在哪个星系？", "options": ["仙女座星系", "银河系", "大麦哲伦星云", "太阳星座"], "answer": "银河系" },
+  { "question": "地球自转一周大约需要？", "options": ["24 小时", "30 天", "365 天", "12 小时"], "answer": "24 小时" },
+  { "question": "“光年”是什么单位？", "options": ["时间", "距离", "速度", "亮度"], "answer": "距离" },
+  { "question": "太阳系中共有几颗行星？", "options": ["7", "8", "9", "10"], "answer": "8" },
+  { "question": "北斗七星位于哪个星座？", "options": ["大熊座", "小熊座", "仙后座", "猎户座"], "answer": "大熊座" },
+  { "question": "北极星位于哪个星座？", "options": ["大熊座", "小熊座", "天鹅座", "天琴座"], "answer": "小熊座" },
+  { "question": "猎户座最易在哪个季节看到？", "options": ["春", "夏", "秋", "冬"], "answer": "冬" },
+  { "question": "宇航员在太空中，身高会？", "options": ["变高", "变矮", "不变"], "answer": "变高" },
+  { "question": "土星密度比水小，理论上它能？", "options": ["浮在水面上", "沉下去"], "answer": "浮在水面上" },
+  { "question": "火星呈现红色的主要原因是？", "options": ["表面富含氧化铁", "火山喷发", "红色沙尘", "红巨星照耀"], "answer": "表面富含氧化铁" },
+  { "question": "月球上的环形山主要由什么造成？", "options": ["火山", "陨石撞击", "地震", "风蚀"], "answer": "陨石撞击" }
+];
+/* ============================================================ */
+
+// 实际使用的题库（默认内嵌，可被 questions.json 覆盖）
+let quizData = QUESTIONS;
+
+// 工具：洗牌（返回新数组）
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 把 answer（文本/索引/字母/数组）统一解析成「选项文本」
+function getCorrectText(q) {
+  const a = q.answer;
+  if (Array.isArray(a)) {
+    return a.map(x => (typeof x === 'number' ? q.options[x] : x));
+  }
+  if (typeof a === 'number') return q.options[a];
+  if (typeof a === 'string') {
+    const u = a.toUpperCase();
+    if (/^[A-D]$/.test(u)) return q.options[u.charCodeAt(0) - 65];
+    return a;
+  }
+  return null;
+}
+
+// 状态
+let currentQuestions = [];
+let currentIndex = 0;
+let userAnswers = [];
+let selected = null;
+
+// DOM
+const startPage = document.getElementById('startPage');
+const quizPage = document.getElementById('quizPage');
+const resultPage = document.getElementById('resultPage');
+const progressText = document.getElementById('progressText');
+const dotsBox = document.getElementById('dots');
+const questionText = document.getElementById('questionText');
+const optionsBox = document.getElementById('optionsBox');
+const nextBtn = document.getElementById('nextBtn');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const scoreNum = document.getElementById('scoreNum');
+const scoreTotal = document.getElementById('scoreTotal');
+const resultMsg = document.getElementById('resultMsg');
+const resultStars = document.getElementById('resultStars');
+
+function showPage(page) {
+  [startPage, quizPage, resultPage].forEach(p => p.classList.add('hidden'));
+  page.classList.remove('hidden');
+}
+
+// 开始 / 再来一次：随机抽题
+function startQuiz() {
+  const total = Math.min(5, quizData.length);
+  const picked = shuffle(quizData).slice(0, total);
+  currentQuestions = picked.map(q => ({
+    question: q.question,
+    options: shuffle(q.options),
+    correct: getCorrectText(q)
+  }));
+  currentIndex = 0;
+  userAnswers = [];
+  renderQuestion();
+  showPage(quizPage);
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentIndex];
+  progressText.textContent = '第 ' + (currentIndex + 1) + '/' + currentQuestions.length + ' 题';
+  renderDots();
+  questionText.textContent = q.question;
+  optionsBox.innerHTML = '';
+  selected = null;
+  nextBtn.disabled = true;
+
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = '<span class="tag">' + letters[i] + '</span>' + opt;
+    btn.addEventListener('click', () => {
+      selected = opt;
+      optionsBox.querySelectorAll('.option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      nextBtn.disabled = false;
+    });
+    optionsBox.appendChild(btn);
+  });
+}
+
+function renderDots() {
+  dotsBox.innerHTML = '';
+  for (let i = 0; i < currentQuestions.length; i++) {
+    const d = document.createElement('span');
+    let cls = 'dot';
+    if (i === currentIndex) cls += ' active';
+    else if (i < currentIndex) cls += ' done';
+    d.className = cls;
+    dotsBox.appendChild(d);
+  }
+}
+
+function isCorrect(q, userChoice) {
+  const c = q.correct;
+  if (Array.isArray(c)) {
+    return Array.isArray(userChoice) && c.length === userChoice.length && c.every(x => userChoice.includes(x));
+  }
+  return userChoice === c;
+}
+
+nextBtn.addEventListener('click', () => {
+  if (selected === null) return;
+  userAnswers.push(selected);
+  currentIndex++;
+  if (currentIndex < currentQuestions.length) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+});
+
+function showResult() {
+  let score = 0;
+  currentQuestions.forEach((q, i) => {
+    if (isCorrect(q, userAnswers[i])) score++;
+  });
+  scoreNum.textContent = score;
+  scoreTotal.textContent = currentQuestions.length;
+
+  resultStars.innerHTML = '';
+  const starCount = Math.max(1, Math.round(score / currentQuestions.length * 5));
+  for (let i = 0; i < starCount; i++) {
+    const s = document.createElement('span');
+    s.textContent = '⭐';
+    s.style.animationDelay = (i * 0.12) + 's';
+    resultStars.appendChild(s);
+  }
+
+  const ratio = score / currentQuestions.length;
+  if (ratio >= 0.8) {
+    resultMsg.textContent = '🎉 恭喜你！获得抽奖资格，去找负责人领奖吧～';
+  } else {
+    resultMsg.textContent = '差一点点，再来一次试试吧！';
+  }
+  showPage(resultPage);
+}
+
+startBtn.addEventListener('click', startQuiz);
+restartBtn.addEventListener('click', startQuiz);
+
+// 生成随机星星背景
+function createStars() {
+  const box = document.getElementById('stars');
+  const n = 90;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('span');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 1;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.setProperty('--dur', (Math.random() * 4 + 2) + 's');
+    s.style.animationDelay = (Math.random() * 4) + 's';
+    box.appendChild(s);
+  }
+}
+createStars();
+
+// 可选：尝试读取同目录 questions.json（失败或无文件则静默使用内嵌题库）
+function tryLoadJson() {
+  fetch('questions.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('no file'); return r.json(); })
+    .then(data => {
+      if (Array.isArray(data) && data.length > 0 &&
+          data.every(d => d.question && Array.isArray(d.options) && d.answer !== undefined)) {
+        quizData = data;
+      }
+    })
+    .catch(() => { /* 离线 / 无文件：用内嵌题库 */ });
+}
+tryLoadJson();
+</script>
+</body>
+</html>
